@@ -329,9 +329,13 @@
                     const formattedHtml = marked.parse(data.cevap);
                     let badgeHtml = '';
                     if (data.niyet) {
-                        const badgeColor = data.niyet === 'BELGE_ARAMA' ? '#38bdf8' : '#a855f7';
+                        let badgeColor = '#38bdf8';
+                        if (data.niyet === 'VERITABANI_ANALIZ') badgeColor = '#a855f7';
+                        if (data.niyet === 'EPOSTA_ISLEMI') badgeColor = '#10b981';
+                        
                         badgeHtml = `<div style="font-size:0.75rem; margin-bottom:0.5rem; padding:0.25rem 0.5rem; background:rgba(255,255,255,0.05); border-radius:6px; display:inline-block; border:1px solid rgba(255,255,255,0.1); color:${badgeColor}; font-weight:600;">🎯 Niyet: ${data.niyet} | ${data.gerekce}</div>`;
                     }
+
                     botDiv.innerHTML = `<div class="markdown-content">${badgeHtml}${formattedHtml}</div>`;
 
                     
