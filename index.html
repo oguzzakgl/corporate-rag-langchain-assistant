@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LangChain Kurumsal AI Asistanı</title>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Marked.js Markdown Renderer -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --accent-blue: #38bdf8;
+            --accent-purple: #818cf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --user-bubble: #2563eb;
+            --bot-bubble: #1e293b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at top left, #0f172a, #020617);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 1.25rem 2rem;
+            border-bottom: 1px solid var(--card-border);
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: #000;
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+        }
+
+        .container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 1.5rem;
+            padding: 1.5rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .sidebar {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            backdrop-filter: blur(16px);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .dropzone {
+            border: 2px dashed var(--accent-blue);
+            border-radius: 12px;
+            padding: 2rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(56, 189, 248, 0.03);
+        }
+
+        .dropzone:hover {
+            background: rgba(56, 189, 248, 0.08);
+            border-color: #7dd3fc;
+        }
+
+        .status-box {
+            background: rgba(2, 6, 23, 0.5);
+            border-radius: 10px;
+            padding: 1rem;
+            font-size: 0.875rem;
+            border: 1px solid var(--card-border);
+        }
+
+        .chat-area {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            backdrop-filter: blur(16px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            max-height: calc(100vh - 220px);
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 1.25rem;
+            border-radius: 14px;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: var(--user-bubble);
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+            background: var(--bot-bubble);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            border-bottom-left-radius: 4px;
+        }
+
+        /* Markdown Render Stilleri */
+        .markdown-content p {
+            margin-bottom: 0.75rem;
+        }
+        .markdown-content p:last-child {
+            margin-bottom: 0;
+        }
+        .markdown-content ul, .markdown-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .markdown-content li {
+            margin-bottom: 0.35rem;
+        }
+        .markdown-content strong {
+            color: var(--accent-blue);
+        }
+
+        .source-card {
+            margin-top: 1rem;
+            padding: 0.85rem;
+            background: rgba(15, 23, 42, 0.6);
+            border-left: 3px solid var(--accent-purple);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .chat-input-area {
+            padding: 1.25rem;
+            border-top: 1px solid var(--card-border);
+            background: rgba(15, 23, 42, 0.9);
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            color: #fff;
+            outline: none;
+            font-size: 0.95rem;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent-blue);
+        }
+
+        button.btn-send {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border: none;
+            color: #000;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button.btn-send:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-title">
+            <h2>LangChain Corporate AI Data Assistant</h2>
+            <span class="badge">FAZ 4 - LANGCHAIN</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- SOL PANEL: PDF YÜKLEME ALANI -->
+        <div class="sidebar">
+            <h3>📄 Döküman Yükleme</h3>
+            <div class="dropzone" id="dropzone" onclick="document.getElementById('pdfInput').click()">
+                <p style="font-weight: 500;">PDF Yüklemek İçin Tıklayın</p>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">veya buraya sürükleyip bırakın</p>
+                <input type="file" id="pdfInput" accept=".pdf" style="display: none;" onchange="uploadPDF(this.files[0])">
+            </div>
+
+            <div class="status-box">
+                <p style="font-weight: 600; margin-bottom: 0.25rem;">Durum:</p>
+                <p id="statusText" style="color: var(--text-muted);">Henüz PDF yüklenmedi.</p>
+            </div>
+        </div>
+
+        <!-- SAĞ PANEL: CANLI CHAT EKRANI -->
+        <div class="chat-area">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot">
+                    <div class="markdown-content">
+                        Sayın Kullanıcı, ben Kurumsal AI Veri Asistanınızım. Soldaki menüden kurum dökümanınızı (PDF) yükleyerek sorularınızı iletebilirsiniz. 🚀
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <input type="text" id="userInput" placeholder="Soru sorun... (Örn: İzin hakları nelerdir?)" onkeypress="if(event.key === 'Enter') sendMessage()">
+                <button class="btn-send" onclick="sendMessage()">Gönder</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function uploadPDF(file) {
+            if (!file) return;
+            
+            const statusText = document.getElementById('statusText');
+            statusText.innerText = "📄 PDF yükleniyor & LangChain ile işleniyor...";
+            statusText.style.color = "#38bdf8";
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const response = await fetch("/upload-pdf", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    statusText.innerText = `✅ PDF Hazır! (${data.toplam_parca} parça ChromaDB'ye kaydedildi)`;
+                    statusText.style.color = "#4ade80";
+                } else {
+                    statusText.innerText = "❌ Hata: " + (data.detail || "PDF yüklenemedi.");
+                    statusText.style.color = "#f87171";
+                }
+            } catch (err) {
+                statusText.innerText = "❌ Sunucu bağlantı hatası!";
+                statusText.style.color = "#f87171";
+            }
+        }
+
+        async function sendMessage() {
+            const inputEl = document.getElementById('userInput');
+            const question = inputEl.value.trim();
+            if (!question) return;
+
+            const chatMessages = document.getElementById('chatMessages');
+
+            // Kullanıcı Mesajı Ekle
+            const userDiv = document.createElement('div');
+            userDiv.className = 'message user';
+            userDiv.innerText = question;
+            chatMessages.appendChild(userDiv);
+
+            inputEl.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Bekliyor Bot Mesajı
+            const botDiv = document.createElement('div');
+            botDiv.className = 'message bot';
+            botDiv.innerHTML = '<div class="markdown-content">⏳ Dökümanlar analiz ediliyor ve yanıt hazırlanıyor...</div>';
+            chatMessages.appendChild(botDiv);
+
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ soru: question })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Marked.js ile Markdown'ı Profesyonel HTML'e çeviriyoruz
+                    const formattedHtml = marked.parse(data.cevap);
+                    botDiv.innerHTML = `<div class="markdown-content">${formattedHtml}</div>`;
+                    
+                    if (data.kaynaklar && data.kaynaklar.length > 0) {
+                        data.kaynaklar.forEach(src => {
+                            const srcDiv = document.createElement('div');
+                            srcDiv.className = 'source-card';
+                            srcDiv.innerText = "📌 Bağlam Döküman Parçası:\n" + src;
+                            botDiv.appendChild(srcDiv);
+                        });
+                    }
+                } else {
+                    botDiv.innerHTML = `<div class="markdown-content">⚠️ ${data.detail || "Bir hata oluştu."}</div>`;
+                }
+            } catch (err) {
+                botDiv.innerHTML = '<div class="markdown-content">❌ Sunucuya bağlanırken hata oluştu.</div>';
+            }
+
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    </script>
+</body>
+</html>
