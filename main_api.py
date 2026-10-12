@@ -52,7 +52,7 @@ app = FastAPI(title="LangChain Corporate RAG, SQL & Email Assistant API", versio
 @app.get("/")
 def home_page():
     """Web arayüzümüz olan index.html dosyasını tarayıcıya yollar."""
-    return FileResponse("faz4_langchain/proje_langchain_sifirdan/index.html")
+    return FileResponse(os.path.join(os.path.dirname(__file__), "index.html"))
 
 
 # Kullanıcıdan gelen HTTP POST sohbet isteğinin Pydantic doğrulama şeması
@@ -108,10 +108,10 @@ def pdf_yukle_endpoint(file: UploadFile = File(...)):
         # 7. ChatPromptTemplate.from_messages() metodunu çağırıp prompt şablonunu 'prompt' değişkenine atadık
         prompt = ChatPromptTemplate.from_messages([
             ("system", """Sen resmi ve kurumsal bir AI Bilgi Asistanısın. 
-Aşağıdaki kurumsal döküman bağlamını (context) kullanarak kullanıcının sorusuna derece derece liste maddeleri halinde, başlıklarla, son derece okunaklı ve profesyonel bir dille cevap ver.
+                Aşağıdaki kurumsal döküman bağlamını (context) kullanarak kullanıcının sorusuna derece derece liste maddeleri 
+                halinde, başlıklarla, son derece okunaklı ve profesyonel bir dille cevap ver.
 
-Kurumsal Bağlam:
-{context}"""),
+            Kurumsal Bağlam: {context}"""),
             ("user", "{input}")
         ])
         
